@@ -18,7 +18,7 @@ public static class ProductEndpoints
         })
         .WithName("GetAllProducts")
         .WithSummary("Obtener lista de productos")
-        .WithDescription("Retorna el catálogo completo de productos disponibles en la pizzería.")
+        .WithDescription("Retorna el catálogo completo de productos.")
         .Produces<IEnumerable<ProductResponse>>(StatusCodes.Status200OK)
         .WithOpenApi();
 
@@ -34,7 +34,7 @@ public static class ProductEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .WithOpenApi();
 
-        // POST /api/products (Protegido con JWT)
+        // POST /api/products (Privado: Requiere política de integrante de repositorio 'RepositoryMemberOnly')
         group.MapPost("/", async (ProductRequest request, IProductServices productService) =>
         {
             var createdProduct = await productService.CreateProductAsync(request);
@@ -45,10 +45,11 @@ public static class ProductEndpoints
         .Produces<ProductResponse>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
-        .RequireAuthorization()
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireAuthorization("RepositoryMemberOnly")
         .WithOpenApi();
 
-        // PUT /api/products/{id} (Protegido con JWT)
+        // PUT /api/products/{id} (Privado)
         group.MapPut("/{id:int}", async (int id, ProductRequest request, IProductServices productService) =>
         {
             var updatedProduct = await productService.UpdateProductAsync(id, request);
@@ -59,10 +60,11 @@ public static class ProductEndpoints
         .Produces<ProductResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status401Unauthorized)
-        .RequireAuthorization()
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireAuthorization("RepositoryMemberOnly")
         .WithOpenApi();
 
-        // DELETE /api/products/{id} (Protegido con JWT)
+        // DELETE /api/products/{id} (Privado)
         group.MapDelete("/{id:int}", async (int id, IProductServices productService) =>
         {
             var success = await productService.DeleteProductAsync(id);
@@ -73,7 +75,8 @@ public static class ProductEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status401Unauthorized)
-        .RequireAuthorization()
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireAuthorization("RepositoryMemberOnly")
         .WithOpenApi();
     }
 }

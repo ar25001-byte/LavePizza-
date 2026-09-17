@@ -10,12 +10,10 @@ using VeraPizza.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configuración de DbContext (Permite usar SQL Server o InMemory para pruebas rápidas)
+// 1. Configuración de DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    // Usa InMemoryDatabase para ejecución inmediata sin dependencias externas de SQL Server;
-    // se puede alternar a UseSqlServer según se requiera en producción.
     options.UseInMemoryDatabase("VeraPizzaInMemoryDb");
     // options.UseSqlServer(connectionString);
 });
@@ -26,6 +24,11 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 // 3. Inyección de Dependencias de Servicios de Negocio (Scoped)
 builder.Services.AddScoped<IProductServices, ProductServices>();
 builder.Services.AddScoped<IUserServices, UserServices>();
+builder.Services.AddScoped<IAuthServices, AuthServices>();
+builder.Services.AddScoped<ICategoryServices, CategoryServices>();
+builder.Services.AddScoped<IAddressServices, AddressServices>();
+builder.Services.AddScoped<IPaymentMethodServices, PaymentMethodServices>();
+builder.Services.AddScoped<IOrderServices, OrderServices>();
 
 // 4. Configuración de Autenticación JWT Bearer
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -50,22 +53,28 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+// 5. Políticas de Autorización Privadas para Integrantes del Repositorio/Organización
+builder.Services.AddAuthorization(options =>
+{
+    // Política estricta: Solo usuarios autenticados que tengan rol 'Admin', 'Developer' o 'Member'
+    options.AddPolicy("RepositoryMemberOnly", policy =>
+        policy.RequireRole("Admin", "Developer", "Member"));
+});
 
-// 5. Configuración de Swagger / OpenAPI con esquema de seguridad Bearer JWT
+// 6. Configuración de Swagger / OpenAPI con esquema de seguridad Bearer JWT
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "VeraPizza Web API",
+        Title = "VeraPizza Web API (Privada)",
         Version = "v1",
-        Description = "API RESTful construida con .NET Core, Minimal APIs, EF Core, AutoMapper y Autenticación JWT."
+        Description = "API RESTful privada restringida para los integrantes del repositorio."
     });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Ingrese el token JWT en el formato: Bearer {su_token}",
+        Description = "Ingrese el token JWT privado en formato: Bearer {su_token}",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -90,7 +99,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Asegurar creación y sembrado de la base de datos en memoria / inicial
+// Inicialización de base de datos
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -103,7 +112,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "VeraPizza API V1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "VeraPizza API Privada V1");
         c.RoutePrefix = "swagger";
     });
 }
@@ -117,5 +126,9 @@ app.UseAuthorization();
 app.MapProductEndpoints();
 app.MapUserEndpoints();
 app.MapAuthEndpoints();
+app.MapCategoryEndpoints();
+app.MapAddressEndpoints();
+app.MapPaymentMethodEndpoints();
+app.MapOrderEndpoints();
 
 app.Run();

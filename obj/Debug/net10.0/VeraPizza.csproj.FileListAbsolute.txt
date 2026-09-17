@@ -158,3 +158,4 @@ C:\Users\inmar\OneDrive\Escritorio\VeraPizza\obj\Debug\net10.0\refint\VeraPizza.
 C:\Users\inmar\OneDrive\Escritorio\VeraPizza\obj\Debug\net10.0\VeraPizza.pdb
 C:\Users\inmar\OneDrive\Escritorio\VeraPizza\obj\Debug\net10.0\VeraPizza.genruntimeconfig.cache
 C:\Users\inmar\OneDrive\Escritorio\VeraPizza\obj\Debug\net10.0\ref\VeraPizza.dll
+C:\Users\inmar\OneDrive\Escritorio\VeraPizza\obj\Debug\net10.0\VeraPizza.sourcelink.json

@@ -10,7 +10,7 @@ public static class UserEndpoints
         var group = app.MapGroup("/api/users")
                        .WithTags("Users");
 
-        // GET /api/users (Protegido)
+        // GET /api/users (Privado: Requiere política RepositoryMemberOnly)
         group.MapGet("/", async (IUserServices userService) =>
         {
             var users = await userService.GetAllUsersAsync();
@@ -18,13 +18,14 @@ public static class UserEndpoints
         })
         .WithName("GetAllUsers")
         .WithSummary("Obtener usuarios")
-        .WithDescription("Obtiene la lista de usuarios registrados en el sistema.")
+        .WithDescription("Obtiene la lista de integrantes registrados en el repositorio.")
         .Produces<IEnumerable<UserResponse>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
-        .RequireAuthorization()
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireAuthorization("RepositoryMemberOnly")
         .WithOpenApi();
 
-        // POST /api/users (Público para registro)
+        // POST /api/users (Registro de integrantes)
         group.MapPost("/", async (UserRequest request, IUserServices userService) =>
         {
             try
@@ -38,8 +39,8 @@ public static class UserEndpoints
             }
         })
         .WithName("CreateUser")
-        .WithSummary("Crear usuario")
-        .WithDescription("Registra un nuevo usuario en el sistema con su contraseña encriptada.")
+        .WithSummary("Crear/Registrar usuario")
+        .WithDescription("Registra un nuevo integrante en el sistema con su contraseña encriptada.")
         .Produces<UserResponse>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .WithOpenApi();
