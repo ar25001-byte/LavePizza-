@@ -1,0 +1,32 @@
+## Ignores para .NET / C# / Visual Studio
+
+# Binarios y compilaciones
+[Bb]in/
+[Oo]bj/
+out/
+build/
+
+# Entorno de Visual Studio y VS Code
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Archivos de configuración con claves locales o secretos
+appsettings.Development.json
+appsettings.Local.json
+*.secrets.json
+
+# Logs y bases de datos locales
+*.log
+*.sqlite
+*.db
+*.ldf
+*.mdf
+
+# Archivos temporales del sistema
+[Tt]emp/
+[Tt]mp/
+.DS_Store
+Thumbs.db
